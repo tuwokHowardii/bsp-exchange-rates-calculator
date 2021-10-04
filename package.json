@@ -1,0 +1,20 @@
+{
+  "name": "bsp-exchange-rates-calculator",
+  "version": "1.0.0",
+  "description": "A calculator for calculating exchange rates based on data from BSP Website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "Howard Numan",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.22.0",
+    "cheerio": "^1.0.0-rc.10",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.13"
+  }
+}
