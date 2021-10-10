@@ -1,54 +1,44 @@
 const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
-const { PORT, bspRates } = require('./utils/constants');
+const Rates = require('./models/rates');
+const { PORT } = require('./utils/constants');
 
 const app = express();
 
-const getRatesTable = async () => {
-    const { data } = await axios(bspRates);
-    const $ = cheerio.load(data);
-    const table = $('table', data)[0];
-
-    const rows = [];
-    $('thead tr', table).each(function () {
-        const head = [];
-        $(this).find('th').each(function () {
-            const th = $(this).text();
-            head.push(th);
-        })
-        if (head.length > 3) rows.push(head);
-    });
-
-    $('tbody tr', table).each(function () {
-        const row = [];
-        $(this).find('td').each(function () {
-            const td = $(this).text();
-            row.push(td);
-        })
-        rows.push(row);
-    });
-    const msg = fn(rows);
-
-    return msg;
-}
-
-app.get('/', async (req, res) => {
-    const jsonData = await getRatesTable();
-    res.send(jsonData);
+app.get('/getRates', (req, res) => {
+    Rates.getDataFromFile()
+        .then((data) => res.status(200).json(data))
+        .catch((err) => {
+            res.status(404).json({ 
+                message: "Rates not available. Please update rates before trying again." 
+            });
+        });
 });
 
-const fn = ([keys, ...values]) => values.map(vs => Object.fromEntries(vs.map((v, i) => [keys[i], v])));
+app.get('/getRate/:id', (req, res) => {
+    const code = req.params.id.toUpperCase();
+    Rates.getDataFromFile()
+        .then((rates) => {
+            const currency = rates.filter((rate) => rate.Code === code);
+            if (currency[0]) {
+                res.json(currency[0]);
+            } else {
+                res.status(404).json({ message: `Cannot find currency with code ${code}` })
+            }
+        }).catch((err) => {
+            res.status(400).json({ message: "Rates not available. Please update rates before trying again." });
+        });
+});
 
-const handleTable = () => {
-    const table = getRatesTable().then((table) => {
-        return table;
+app.post('/updateRates', (req, res) => {
+    Rates.updateRatesData().then((update) => {
+        res.status(update.status).json({ message: update.message })
     });
+})
 
-}
+Rates.updatePeriodically();
 
 app.listen(PORT, () => {
     console.log(`Listening on PORT ${PORT}`)
-})
+});
 
 module.exports = app;

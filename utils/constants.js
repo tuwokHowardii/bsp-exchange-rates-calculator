@@ -1,4 +1,5 @@
 module.exports = {
-    PORT: 3050,
-    bspRates: "https://www.bsp.com.pg/international/exchange-rates/"
+    PORT: process.env.PORT || 3050,
+    bspRatesURL: "https://www.bsp.com.pg/international/exchange-rates/",
+    jsonDBFile: './data/db.json'
 }
